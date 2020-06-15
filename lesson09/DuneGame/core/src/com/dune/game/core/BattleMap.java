@@ -14,8 +14,8 @@ public class BattleMap implements GameMap {
         private int resource;
         private float resourceRegenerationRate;
         private float resourceRegenerationTime;
-        private boolean groundPassable;
-        private boolean airPassable;
+        private boolean groundPassable; // проверка проходимости по земле
+        private boolean airPassable; // проверка проходимости по воздуху
 
         public Cell(int cellX, int cellY) {
             this.cellX = cellX;
@@ -60,7 +60,7 @@ public class BattleMap implements GameMap {
             }
         }
 
-        public void blockGroundPass() {
+        public void blockGroundPass() {  // блокировка клетки
             groundPassable = false;
             resourceRegenerationRate = 0.0f;
             resource = 0;
@@ -68,15 +68,15 @@ public class BattleMap implements GameMap {
 
         public void blockAirPass() {
             airPassable = false;
-        }
+        }  // блокировка клетки
 
         public void unblockGroundPass() {
             groundPassable = true;
-        }
+        } // разблокировка клетки
 
         public void unblockAirPass() {
             airPassable = true;
-        }
+        } // разблокировка клетки
     }
 
     public static final int COLUMNS_COUNT = 24;
@@ -168,7 +168,7 @@ public class BattleMap implements GameMap {
         }
     }
 
-    public boolean isCellGroundPassable(Vector2 position) {
+    public boolean isCellGroundPassable(Vector2 position) { // метод проверки на проходимость клетки
         int cellX = (int) (position.x / BattleMap.CELL_SIZE);
         int cellY = (int) (position.y / BattleMap.CELL_SIZE);
         if (cellX < 0 || cellY < 0 || cellX >= COLUMNS_COUNT || cellY >= ROWS_COUNT) {
@@ -216,7 +216,7 @@ public class BattleMap implements GameMap {
         }
     }
 
-    public Building getBuildingEntrance(int cellX, int cellY) {
+    public Building getBuildingEntrance(int cellX, int cellY) { //метод проверки, находится ли бот на входе в здание
         return cells[cellX][cellY].buildingEntrance;
     }
 }

@@ -1,6 +1,7 @@
 package com.dune.game.core.units;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.dune.game.core.Building;
 import com.dune.game.core.units.types.TargetType;
 import com.dune.game.core.units.types.UnitType;
 import com.dune.game.screens.utils.Assets;
@@ -51,6 +52,24 @@ public class BattleTank extends AbstractUnit {
         }
         if (target == null) {
             weapon.setAngle(rotateTo(weapon.getAngle(), angle, 180.0f, dt));
+        }
+
+//        Building b = gc.getMap().getBuildingEntrance(getCellX(), getCellY());
+//        if (container == 0 && b != null && b.getBuildingType() == Building.Type.STOCK && b.getOwnerLogic() == this.baseLogic) {
+//            container = 32;
+//        }
+
+        if (container == 0) {
+            for (int j = 0; j < gc.getBuildingsController().activeSize(); j++) {
+                Building b= gc.getBuildingsController().getActiveList().get(j);
+                if (b != null && b.getBuildingType() == Building.Type.STOCK && b.getOwnerLogic() == this.baseLogic) {
+                    this.commandMoveTo(b.getEntrancePosition(), false);
+                    b = gc.getMap().getBuildingEntrance(getCellX(), getCellY());
+                    if (b != null && b.getBuildingType() == Building.Type.STOCK && b.getOwnerLogic() == this.baseLogic) {
+                        container = 32;
+                    }
+                }
+            }
         }
     }
 
