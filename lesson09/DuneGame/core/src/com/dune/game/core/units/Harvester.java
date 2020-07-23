@@ -25,7 +25,7 @@ public class Harvester extends AbstractUnit {
     public void setup(BaseLogic baseLogic, float x, float y) {
         this.position.set(x, y);
         this.baseLogic = baseLogic;
-        this.ownerType = baseLogic.getOwnerType();
+        this.ownerType = baseLogic.getOwnerType(); // запрашиваем тип харвестера у baseLogic
         this.hp = this.hpMax;
         this.destination.set(position);
         this.commandMoveTo(this.position, true);
@@ -70,5 +70,9 @@ public class Harvester extends AbstractUnit {
             baseLogic.addMoney(container * 100);
             container = 0;
         }
+    }
+
+    public boolean isFullContainer() { // проверка на заполненность контейнера
+        return container == containerCapacity;
     }
 }

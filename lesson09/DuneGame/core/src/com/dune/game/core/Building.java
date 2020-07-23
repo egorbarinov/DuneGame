@@ -22,8 +22,20 @@ public class Building extends GameObject implements Poolable, Targetable {
     private TextureRegion texture;
     private TextureRegion progressbarTexture;
     private Vector2 textureWorldPosition;
+    private Vector2 entrancePosition; // координаты входа в строение
     private int hpMax;
     private int hp;
+
+    @Override
+    public int getCellX() {
+        return cellX;
+    }
+
+    @Override
+    public int getCellY() {
+        return cellY;
+    }
+
     private int cellX, cellY;
 
     @Override
@@ -48,26 +60,32 @@ public class Building extends GameObject implements Poolable, Targetable {
         super(gc);
         this.texture = Assets.getInstance().getAtlas().findRegion("grass");
         this.progressbarTexture = Assets.getInstance().getAtlas().findRegion("progressbar");
-        this.textureWorldPosition = new Vector2();
+        this.textureWorldPosition = new Vector2(); // координаты нижнего угла здания
+        this.entrancePosition = new Vector2();
+    }
+
+    public Vector2 getEntrancePosition() { // возвращает координаты входа в здание
+        return entrancePosition;
     }
 
     public void setup(BaseLogic ownerLogic, int cellX, int cellY) {
-        this.ownerLogic = ownerLogic;
-        this.position.set(cellX * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, cellY * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
-        this.cellX = cellX;
-        this.cellY = cellY;
+        this.ownerLogic = ownerLogic;  // определяем, что здание может принадлежать либо player либо ai
+        this.position.set(cellX * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, cellY * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2); // координаты нижнего угла здания
+        this.cellX = cellX; // координаты входа по X
+        this.cellY = cellY; // координаты входа по Y
         this.hpMax = 500;
         this.hp = this.hpMax;
         this.textureWorldPosition.set((cellX - 1) * BattleMap.CELL_SIZE, cellY * BattleMap.CELL_SIZE);
         this.buildingType = Type.STOCK;
-        gc.getMap().setupBuilding(cellX - 1, cellY, cellX + 1, cellY + 1, cellX, cellY - 1, this);
+        gc.getMap().setupBuilding(cellX - 1, cellY, cellX + 1, cellY + 1, cellX, cellY - 1, this); // блокировка проходимости по воздуху и по земле
+        this.entrancePosition.set(((float)cellX + 0.5f) * BattleMap.CELL_SIZE, ((float) cellY - 0.5f) * BattleMap.CELL_SIZE);
     }
 
     public void render(SpriteBatch batch) {
         batch.setColor(0.5f, 0.5f, 0.5f, 0.6f);
-        batch.draw(texture, textureWorldPosition.x, textureWorldPosition.y, BattleMap.CELL_SIZE * 3, BattleMap.CELL_SIZE * 2);
+        batch.draw(texture, textureWorldPosition.x, textureWorldPosition.y, BattleMap.CELL_SIZE * 3, BattleMap.CELL_SIZE * 2); // отрисовываем здание
         batch.setColor(0.5f, 0.2f, 0.2f, 0.8f);
-        batch.draw(texture, textureWorldPosition.x + BattleMap.CELL_SIZE, textureWorldPosition.y - BattleMap.CELL_SIZE, BattleMap.CELL_SIZE, BattleMap.CELL_SIZE);
+        batch.draw(texture, textureWorldPosition.x + BattleMap.CELL_SIZE, textureWorldPosition.y - BattleMap.CELL_SIZE, BattleMap.CELL_SIZE, BattleMap.CELL_SIZE); // отрисовка входа
         batch.setColor(1, 1, 1, 1);
 
         if (hp < hpMax) {
