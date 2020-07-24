@@ -78,11 +78,11 @@ public class WorldRenderer {
             float maxX = Math.max(gc.getSelectionStart().x, gc.getMouse().x);
             float minY = Math.min(gc.getSelectionStart().y, gc.getMouse().y);
             float maxY = Math.max(gc.getSelectionStart().y, gc.getMouse().y);
-            for (float i = minX; i < maxX; i += 10.0f) {
+            for (float i = minX; i < maxX; i += 20.0f) {
                 batch.draw(selectorTexture, i - 4, minY - 4, 8, 8);
                 batch.draw(selectorTexture, i - 4, maxY - 4, 8, 8);
             }
-            for (float i = minY; i < maxY; i += 10.0f) {
+            for (float i = minY; i < maxY; i += 20.0f) {
                 batch.draw(selectorTexture, minX - 4, i - 4, 8, 8);
                 batch.draw(selectorTexture, maxX - 4, i - 4, 8, 8);
             }

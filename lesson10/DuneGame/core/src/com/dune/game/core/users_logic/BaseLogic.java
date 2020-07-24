@@ -3,7 +3,7 @@ package com.dune.game.core.users_logic;
 import com.dune.game.core.GameController;
 import com.dune.game.core.units.types.Owner;
 
-public abstract class BaseLogic {
+public class BaseLogic {
     protected Owner ownerType;
     protected GameController gc;
     protected int money;
@@ -29,6 +29,4 @@ public abstract class BaseLogic {
     public Owner getOwnerType() {
         return ownerType;
     }
-
-    public abstract void update(float dt);
 }

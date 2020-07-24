@@ -14,7 +14,7 @@ public class LoadingScreen extends AbstractScreen {
 
     public LoadingScreen(SpriteBatch batch) {
         super(batch);
-        Pixmap pixmap = new Pixmap(ScreenManager.WORLD_WIDTH, 20, Pixmap.Format.RGB888);
+        Pixmap pixmap = new Pixmap(1280, 20, Pixmap.Format.RGB888);
         pixmap.setColor(Color.GREEN);
         pixmap.fill();
         this.texture = new Texture(pixmap);
@@ -34,7 +34,7 @@ public class LoadingScreen extends AbstractScreen {
             ScreenManager.getInstance().goToTarget();
         }
         batch.begin();
-        batch.draw(texture, 0, 0, ScreenManager.WORLD_WIDTH * Assets.getInstance().getAssetManager().getProgress(), 20);
+        batch.draw(texture, 0, 0, 1280 * Assets.getInstance().getAssetManager().getProgress(), 20);
         batch.end();
     }
 

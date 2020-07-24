@@ -7,8 +7,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.dune.game.core.*;
 import com.dune.game.core.interfaces.Poolable;
 import com.dune.game.core.interfaces.Targetable;
-import com.dune.game.core.map.BattleMap;
-import com.dune.game.core.map.Cell;
 import com.dune.game.core.units.types.Owner;
 import com.dune.game.core.units.types.TargetType;
 import com.dune.game.core.units.types.UnitType;
@@ -54,10 +52,6 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
         return baseLogic;
     }
 
-    public Targetable getTarget() {
-        return target;
-    }
-
     public boolean takeDamage(int damage) {
         if (!isActive()) {
             return false;
@@ -83,6 +77,10 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
             stayStill = true;
         }
         tmp.set(position).add(value);
+
+        if (!gc.getMap().isCellGroundPassable(tmp)) { // запрещаем толкать танки за пределы экрана
+            return;
+        }
         position.add(value);
         if (stayStill) {
             destination.set(position);
@@ -102,7 +100,7 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
         super(gc);
         this.progressbarTexture = Assets.getInstance().getAtlas().findRegion("progressbar");
         this.timePerFrame = 0.08f;
-        this.rotationSpeed = 180.0f;
+        this.rotationSpeed = 90.0f;
         this.destination = new Vector2();
     }
 
@@ -112,76 +110,57 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
         return (int) (moveTimer / timePerFrame) % textures.length;
     }
 
-    public void update(float dt) {
-        gc.getMap().unblockCell(getCellX(), getCellY(), Cell.BlockType.UNIT);
-        lifeTime += dt;
+    public Vector2 getDestination() { ///////////////////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!
+        return destination;
+    }
 
+    public void update(float dt) {
+        lifeTime += dt;
+        if (target != null) {
+            commandMoveTo(target.getPosition(), false);
+            if (position.dst(target.getPosition()) < minDstToActiveTarget) {
+                commandMoveTo(position, false);
+            }
+        }
         if (target == null) {
             weapon.setAngle(rotateTo(weapon.getAngle(), angle, 180.0f, dt));
         }
         updateWeapon(dt);
-
-        if (!gc.getMap().isCellPassable(destination, false)) {
-            gc.getPathFinder().buildRoute(getCellX(), getCellY(), realCellXDestination, realCellYDestination, destination);
-        }
-
-        int oldCellX = getCellX();
-        int oldCellY = getCellY();
-
-        if (position.dst(destination) > speed * dt) {
+        if (position.dst(destination) > 3.0f) {
             float angleTo = tmp.set(destination).sub(position).angle();
             angle = rotateTo(angle, angleTo, rotationSpeed, dt);
             moveTimer += dt;
-            tmp.set(speed, 0).rotate(angle);
-            if (Math.abs(angleTo - angle) < rotationSpeed * dt) {
-                angle = angleTo;
-            }
-            if (Math.abs(angleTo - angle) < 1) {
-                position.mulAdd(tmp, dt);
-            }
-        } else {
-            position.set(destination);
-            if (!(getCellX() == realCellXDestination && getCellY() == realCellYDestination)) {
-                gc.getPathFinder().buildRoute(getCellX(), getCellY(), realCellXDestination, realCellYDestination, destination);
-            }
-            if (target != null) {
-                if (position.dst(target.getPosition()) < minDstToActiveTarget) {
-                    resetMoveTo();
-                } else {
-                    commandMoveTo(target.getPosition(), false);
+
+            if (gc.getMap().getResourceCount(position) > 0) {
+                for (int i = 0; i < gc.getMap().getResourceCount(position); i++) {
+                    gc.getParticleController().setup(MathUtils.random(getCellX() * BattleMap.CELL_SIZE, getCellX() * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE), MathUtils.random(getCellY() * BattleMap.CELL_SIZE, getCellY() * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE), MathUtils.random(-20, 20), MathUtils.random(-20, 20), 0.3f, 0.5f, 0.4f,
+                            0, 0, 1, 0.1f, 1, 1, 1, 0.4f);
                 }
             }
+
+            tmp.set(speed, 0).rotate(angle);
+            position.mulAdd(tmp, dt);
+            if ((position.dst(destination) < 120.0f && Math.abs(angleTo - angle) > 10)) {
+                position.mulAdd(tmp, -dt);
+            }
+
+            if (!gc.getMap().isCellGroundPassable(position)) { // запрет на смещение за пределы карты
+                tmp.set(position).sub(getCellX() * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, getCellY() * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2).nor().scl(2);
+                position.add(tmp);
+            }
+        } else {
+            if (getCellX() == realCellXDestination && getCellY() == realCellYDestination) {
+                return;
+            }
+            gc.getPathFinder().buildRoute(getCellX(), getCellY(), realCellXDestination, realCellYDestination, destination);
         }
 
         checkBounds();
-        gc.getMap().blockCell(getCellX(), getCellY(), Cell.BlockType.UNIT);
-    }
-
-    public void resetMoveTo() {
-        realCellXDestination = getCellX();
-        realCellYDestination = getCellY();
-        destination.set(realCellXDestination * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, realCellYDestination * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
     }
 
     public void commandMoveTo(Vector2 point, boolean resetTarget) {
         int cellPointX = (int) (point.x / BattleMap.CELL_SIZE);
         int cellPointY = (int) (point.y / BattleMap.CELL_SIZE);
-        if (!gc.getMap().isCellPassable(cellPointX, cellPointY, false)) {
-            exit:
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    if (gc.getMap().isCellPassable(cellPointX + i, cellPointY + j, false)) {
-                        cellPointX += i;
-                        cellPointY += j;
-                        break exit;
-                    }
-                    if (i == 1 && j == 1) {
-                        cellPointX = getCellX();
-                        cellPointY = getCellY();
-                    }
-                }
-            }
-        }
         realCellXDestination = cellPointX;
         realCellYDestination = cellPointY;
         gc.getPathFinder().buildRoute(getCellX(), getCellY(), realCellXDestination, realCellYDestination, destination);
@@ -222,13 +201,6 @@ public abstract class AbstractUnit extends GameObject implements Poolable, Targe
         batch.draw(textures[getCurrentFrameIndex()], position.x - CORE_SIZE_D2, position.y - CORE_SIZE_D2, CORE_SIZE_D2, CORE_SIZE_D2, CORE_SIZE, CORE_SIZE, 1, 1, angle);
 
         batch.draw(weaponTexture, position.x - CORE_SIZE_D2, position.y - CORE_SIZE_D2, CORE_SIZE_D2, CORE_SIZE_D2, CORE_SIZE, CORE_SIZE, 1, 1, weapon.getAngle());
-
-        for (int i = 0; i < 20; i++) {
-            float x = position.x + (realCellXDestination * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2 - position.x) / 20.0f * i;
-            float y = position.y + (realCellYDestination * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2 - position.y) / 20.0f * i;
-            batch.draw(textures[0], x - CORE_SIZE_D2, y - CORE_SIZE_D2, CORE_SIZE_D2, CORE_SIZE_D2, CORE_SIZE, CORE_SIZE, 0.2f, 0.2f, 0.0f);
-
-        }
 
         batch.setColor(1, 1, 1, 1);
         renderGui(batch);

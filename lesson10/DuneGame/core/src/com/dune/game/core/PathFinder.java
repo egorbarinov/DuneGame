@@ -1,8 +1,20 @@
 package com.dune.game.core;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.FileHandleResolver;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
+import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.dune.game.core.map.BattleMap;
-import com.dune.game.core.map.GameMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +44,10 @@ public class PathFinder {
 
     private GameMap gameMap;
     private CellNode[][] nodes;
-    private PriorityQueue<CellNode> frontier;
 
     public PathFinder(GameMap gameMap) {
         this.gameMap = gameMap;
         this.nodes = new CellNode[gameMap.getSizeX()][gameMap.getSizeY()];
-        this.frontier = new PriorityQueue<>(1000);
         for (int i = 0; i < gameMap.getSizeX(); i++) {
             for (int j = 0; j < gameMap.getSizeY(); j++) {
                 this.nodes[i][j] = new CellNode(i, j);
@@ -46,10 +56,6 @@ public class PathFinder {
     }
 
     public void buildRoute(int srcX, int srcY, int dstX, int dstY, Vector2 newDst) {
-        if (srcX == dstX && srcY == dstY) {
-            newDst.set(srcX * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, srcY * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
-            return;
-        }
         for (int i = 0; i < gameMap.getSizeX(); i++) {
             for (int j = 0; j < gameMap.getSizeY(); j++) {
                 this.nodes[i][j].neighbors.clear();
@@ -68,13 +74,25 @@ public class PathFinder {
                         }
                     }
                 }
+//                if (i > 0 && gameMap.isCellPassable(i - 1, j, false)) {
+//                    this.nodes[i][j].neighbors.add(this.nodes[i - 1][j]);
+//                }
+//                if (i < gameMap.getSizeX() - 1 && gameMap.isCellPassable(i + 1, j, false)) {
+//                    this.nodes[i][j].neighbors.add(this.nodes[i + 1][j]);
+//                }
+//                if (j > 0 && gameMap.isCellPassable(i, j - 1, false)) {
+//                    this.nodes[i][j].neighbors.add(this.nodes[i][j - 1]);
+//                }
+//                if (j < gameMap.getSizeY() - 1 && gameMap.isCellPassable(i, j + 1, false)) {
+//                    this.nodes[i][j].neighbors.add(this.nodes[i][j + 1]);
+//                }
             }
         }
 
         nodes[srcX][srcY].from = null;
         nodes[srcX][srcY].cost = 0;
 
-        frontier.clear();
+        PriorityQueue<CellNode> frontier = new PriorityQueue<CellNode>(1000);
         frontier.add(nodes[srcX][srcY]);
 
         while (!frontier.isEmpty()) {
@@ -104,7 +122,9 @@ public class PathFinder {
         }
 
         CellNode out = nodes[dstX][dstY];
-
+        if (out == null) {
+            return;
+        }
         if (out.from == null) {
             newDst.set(out.x * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, out.y * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
             return;

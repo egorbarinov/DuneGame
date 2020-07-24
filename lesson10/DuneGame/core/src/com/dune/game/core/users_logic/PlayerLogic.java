@@ -2,12 +2,14 @@ package com.dune.game.core.users_logic;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.dune.game.core.map.BattleMap;
+import com.dune.game.core.BattleMap;
 import com.dune.game.core.Building;
 import com.dune.game.core.GameController;
 import com.dune.game.core.units.AbstractUnit;
 import com.dune.game.core.units.types.Owner;
 import com.dune.game.core.units.types.UnitType;
+
+import javax.imageio.stream.ImageOutputStream;
 
 public class PlayerLogic extends BaseLogic {
     public PlayerLogic(GameController gc) {
@@ -18,7 +20,6 @@ public class PlayerLogic extends BaseLogic {
         this.ownerType = Owner.PLAYER;
     }
 
-    @Override
     public void update(float dt) {
         if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
             for (int i = 0; i < gc.getSelectedUnits().size(); i++) {

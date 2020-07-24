@@ -15,9 +15,9 @@ public class ScreenManager {
         MENU, GAME
     }
 
-    public static final int WORLD_WIDTH = 1600;
+    public static final int WORLD_WIDTH = 1280;
     public static final int HALF_WORLD_WIDTH = WORLD_WIDTH / 2;
-    public static final int WORLD_HEIGHT = 800;
+    public static final int WORLD_HEIGHT = 720;
     public static final int HALF_WORLD_HEIGHT = WORLD_HEIGHT / 2;
 
     private DuneGame game;

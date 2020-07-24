@@ -3,7 +3,7 @@ package com.dune.game.core.controllers;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.dune.game.core.map.BattleMap;
+import com.dune.game.core.BattleMap;
 import com.dune.game.core.GameController;
 import com.dune.game.core.units.AbstractUnit;
 import com.dune.game.core.units.types.Owner;
@@ -33,6 +33,7 @@ public class UnitsController {
         return aiUnits;
     }
 
+
     public UnitsController(GameController gc) {
         this.gc = gc;
         this.battleTanksController = new BattleTanksController(gc);
@@ -40,18 +41,13 @@ public class UnitsController {
         this.units = new ArrayList<>();
         this.playerUnits = new ArrayList<>();
         this.aiUnits = new ArrayList<>();
-        createBattleTank(gc.getMainPlayer(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
-        createBattleTank(gc.getMainPlayer(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
-        createBattleTank(gc.getMainPlayer(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
-
-//        for (int i = 0; i < 5; i++) {
-//            createBattleTank(gc.getPlayerLogic(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
-//            createHarvester(gc.getPlayerLogic(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
-//        }
-        for (int i = 0; i < 12; i++) {
-
-            createBattleTank(gc.getPlayers().get(1), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
-//            createBattleTank(gc.getPlayers().get(2), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
+        for (int i = 0; i < 5; i++) {
+            createBattleTank(gc.getPlayerLogic(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
+            createHarvester(gc.getPlayerLogic(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
+        }
+        for (int i = 0; i < 5; i++) {
+            createBattleTank(gc.getAiLogic(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
+            createHarvester(gc.getAiLogic(), MathUtils.random(0, gc.getMap().getSizeX() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2, MathUtils.random(0, gc.getMap().getSizeY() - 1) * BattleMap.CELL_SIZE + BattleMap.CELL_SIZE / 2);
         }
     }
 
@@ -101,26 +97,6 @@ public class UnitsController {
         for (int i = 0; i < srcList.size(); i++) {
             AbstractUnit au = srcList.get(i);
             if (au.getUnitType() == unitType) {
-                out.add((T) au);
-            }
-        }
-    }
-
-    public <T> void collectTanksExcludeOwner(List<T> out, BaseLogic ownerLogic, UnitType unitType) {
-        out.clear();
-        for (int i = 0; i < units.size(); i++) {
-            AbstractUnit au = units.get(i);
-            if (au.getUnitType() == unitType && au.getBaseLogic() != ownerLogic) {
-                out.add((T) au);
-            }
-        }
-    }
-
-    public <T> void collectTanksByOwner(List<T> out, BaseLogic ownerLogic, UnitType unitType) {
-        out.clear();
-        for (int i = 0; i < units.size(); i++) {
-            AbstractUnit au = units.get(i);
-            if (au.getUnitType() == unitType && au.getBaseLogic() == ownerLogic) {
                 out.add((T) au);
             }
         }
