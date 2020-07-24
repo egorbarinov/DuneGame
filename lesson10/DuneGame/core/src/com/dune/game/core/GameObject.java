@@ -1,7 +1,6 @@
 package com.dune.game.core;
 
 import com.badlogic.gdx.math.Vector2;
-import com.dune.game.core.map.BattleMap;
 
 public abstract class GameObject {
     protected GameController gc;

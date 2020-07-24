@@ -1,7 +1,7 @@
 package com.dune.game.core.units;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
+import com.dune.game.core.Building;
 import com.dune.game.core.units.types.TargetType;
 import com.dune.game.core.units.types.UnitType;
 import com.dune.game.screens.utils.Assets;
@@ -16,7 +16,7 @@ public class BattleTank extends AbstractUnit {
         this.textures = Assets.getInstance().getAtlas().findRegion("tankcore").split(CORE_SIZE, CORE_SIZE)[0];
         this.weaponTexture = Assets.getInstance().getAtlas().findRegion("turret");
         this.speed = 120.0f;
-        this.hpMax = 2500 + MathUtils.random(75);
+        this.hpMax = 100;
         this.weapon = new Weapon(1.5f, 1);
         this.minDstToActiveTarget = weapon.getRange() - 40.0f;
         this.containerCapacity = 32;
@@ -53,6 +53,24 @@ public class BattleTank extends AbstractUnit {
         if (target == null) {
             weapon.setAngle(rotateTo(weapon.getAngle(), angle, 180.0f, dt));
         }
+
+//        Building b = gc.getMap().getBuildingEntrance(getCellX(), getCellY());
+//        if (container == 0 && b != null && b.getBuildingType() == Building.Type.STOCK && b.getOwnerLogic() == this.baseLogic) {
+//            container = 32;
+//        }
+
+        if (container == 0) {
+            for (int j = 0; j < gc.getBuildingsController().activeSize(); j++) {
+                Building b= gc.getBuildingsController().getActiveList().get(j);
+                if (b != null && b.getBuildingType() == Building.Type.STOCK && b.getOwnerLogic() == this.baseLogic) {
+                    this.commandMoveTo(b.getEntrancePosition(), false);
+                    b = gc.getMap().getBuildingEntrance(getCellX(), getCellY());
+                    if (b != null && b.getBuildingType() == Building.Type.STOCK && b.getOwnerLogic() == this.baseLogic) {
+                        container = 32;
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -60,7 +78,7 @@ public class BattleTank extends AbstractUnit {
         if (target == null) {
             return;
         }
-        if (target.getTargetType() == TargetType.UNIT && getBaseLogic() != ((AbstractUnit) target).getBaseLogic()) {
+        if (target.getTargetType() == TargetType.UNIT && ((AbstractUnit) target).getOwnerType() != this.ownerType) {
             this.target = target;
             return;
         }

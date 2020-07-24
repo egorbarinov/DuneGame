@@ -1,6 +1,8 @@
 package com.dune.game.core;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
@@ -16,15 +18,14 @@ import com.dune.game.core.controllers.ParticleController;
 import com.dune.game.core.controllers.ProjectilesController;
 import com.dune.game.core.controllers.UnitsController;
 import com.dune.game.core.gui.GuiPlayerInfo;
-import com.dune.game.core.map.BattleMap;
 import com.dune.game.core.units.AbstractUnit;
 import com.dune.game.core.users_logic.AiLogic;
-import com.dune.game.core.users_logic.BaseLogic;
 import com.dune.game.core.users_logic.PlayerLogic;
 import com.dune.game.core.utils.Collider;
 import com.dune.game.screens.ScreenManager;
 import com.dune.game.screens.utils.Assets;
 import lombok.Getter;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +36,16 @@ public class GameController {
 
     private BattleMap map;
     private GuiPlayerInfo guiPlayerInfo;
-    private List<BaseLogic> players;
-    private PlayerLogic mainPlayer;
+    private PlayerLogic playerLogic;
+    private AiLogic aiLogic;
     private ProjectilesController projectilesController;
     private ParticleController particleController;
     private UnitsController unitsController;
+
+    public BuildingsController getBuildingsController() {
+        return buildingsController;
+    }
+
     private BuildingsController buildingsController;
     private PathFinder pathFinder;
     private Vector2 tmp;
@@ -59,11 +65,8 @@ public class GameController {
     public GameController() {
         this.mouse = new Vector2();
         this.tmp = new Vector2();
-        this.players = new ArrayList<>();
-        this.mainPlayer = new PlayerLogic(this);
-        this.players.add(mainPlayer);
-        this.players.add(new AiLogic(this, "Neutral"));
-        this.players.add(new AiLogic(this, "General Darkman"));
+        this.playerLogic = new PlayerLogic(this); // должен быть создан до unitsController, иначе все сломается
+        this.aiLogic = new AiLogic(this);  // должен быть создан до unitsController, иначе все сломается
         this.collider = new Collider(this);
         this.selectionStart = new Vector2(-1, -1);
         this.selectionEnd = new Vector2(-1, -1);
@@ -75,8 +78,8 @@ public class GameController {
         this.buildingsController = new BuildingsController(this);
         this.unitsController = new UnitsController(this);
         this.pointOfView = new Vector2(ScreenManager.HALF_WORLD_WIDTH, ScreenManager.HALF_WORLD_HEIGHT);
-        this.buildingsController.setup(3, 3, players.get(0));
-//        this.buildingsController.setup(14, 8, aiLogic);
+        this.buildingsController.setup(3, 3, playerLogic);
+        this.buildingsController.setup(14, 8, aiLogic);
 //        this.music = Gdx.audio.newMusic(Gdx.files.internal("1.mp3"));
 //        this.sound = Gdx.audio.newSound(Gdx.files.internal("explosion.wav"));
         createGuiAndPrepareGameInput();
@@ -91,20 +94,24 @@ public class GameController {
             ScreenManager.getInstance().pointCameraTo(getPointOfView());
             mouse.set(Gdx.input.getX(), Gdx.input.getY());
             ScreenManager.getInstance().getViewport().unproject(mouse);
+           // System.out.println(map.isCellGroundPassable(mouse)); проверка проходимости клетки для мышки
             unitsController.update(dt);
-            for (int i = 0; i < players.size(); i++) {
-                players.get(i).update(dt);
-            }
+            playerLogic.update(dt);
+            aiLogic.update(dt);
             buildingsController.update(dt);
             projectilesController.update(dt);
             map.update(dt);
             collider.checkCollisions();
             particleController.update(dt);
+//        for (int i = 0; i < 5; i++) {
+//            particleController.setup(mouse.x, mouse.y, MathUtils.random(-15.0f, 15.0f), MathUtils.random(-30.0f, 30.0f), 0.5f,
+//                    0.3f, 1.4f, 1, 1, 0, 1, 1, 0, 0, 0.5f);
+//        }
             guiPlayerInfo.update(dt);
         }
         ScreenManager.getInstance().resetCamera();
         stage.act(dt);
-//        changePOV(dt);
+        changePOV(dt);
     }
 
     public void changePOV(float dt) {
@@ -210,11 +217,11 @@ public class GameController {
             }
         });
 
-        final TextButton testBtn = new TextButton("Test", textButtonStyle);
+        final TextButton testBtn = new TextButton("Pause", textButtonStyle);
         testBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                System.out.println("Test");
+                paused = !paused;
                 ;
             }
         });
@@ -228,7 +235,7 @@ public class GameController {
         Label.LabelStyle labelStyle = new Label.LabelStyle(font14, Color.WHITE);
         skin.add("simpleLabel", labelStyle);
 
-        guiPlayerInfo = new GuiPlayerInfo(mainPlayer, skin);
+        guiPlayerInfo = new GuiPlayerInfo(playerLogic, skin);
         guiPlayerInfo.setPosition(0, 700);
         stage.addActor(guiPlayerInfo);
         stage.addActor(menuGroup);

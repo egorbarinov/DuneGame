@@ -25,8 +25,8 @@ public class Collider {
             for (int j = i + 1; j < units.size(); j++) {
                 AbstractUnit u2 = units.get(j);
                 float dst = u1.getPosition().dst(u2.getPosition());
-                if (dst < 12 + 12) {
-                    float colLengthD2 = (24 - dst) / 2;
+                if (dst < 30 + 30) {
+                    float colLengthD2 = (60 - dst) / 2;
                     tmp.set(u2.getPosition()).sub(u1.getPosition()).nor().scl(colLengthD2);
                     u2.moveBy(tmp);
                     tmp.scl(-1);
@@ -39,7 +39,7 @@ public class Collider {
             for (int j = 0; j < gc.getUnitsController().getUnits().size(); j++) {
                 AbstractUnit u = gc.getUnitsController().getUnits().get(j);
                 if (p.getOwner().getBaseLogic() != u.getBaseLogic() && p.getPosition().dst(u.getPosition()) < 30) {
-                    for (int k = 0; k < 15; k++) {
+                    for (int k = 0; k < 25; k++) {
                         tmp.set(p.getVelocity()).nor().scl(120.0f).add(MathUtils.random(-40, 40), MathUtils.random(-40, 40));
                         gc.getParticleController().setup(
                                 p.getPosition().x, p.getPosition().y, tmp.x, tmp.y, 0.4f, 1.0f, 0.2f,
@@ -47,17 +47,10 @@ public class Collider {
                     }
                     p.deactivate();
                     u.takeDamage(5);
-                    if(MathUtils.random(100) < 3) {
-                        u.takeDamage(5);
-                        for (int k = 0; k < 15; k++) {
-                            tmp.set(p.getVelocity()).nor().scl(120.0f).add(MathUtils.random(-40, 40), MathUtils.random(-40, 40));
-                            gc.getParticleController().setup(
-                                    p.getPosition().x, p.getPosition().y, tmp.x, tmp.y, 0.4f, 1.0f, 1.2f,
-                                    1, 0, 0, 1, 1, 0, 0, 0.8f);
-                        }
-                    }
                 }
             }
         }
     }
+
+
 }

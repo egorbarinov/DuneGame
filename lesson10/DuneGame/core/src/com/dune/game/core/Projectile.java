@@ -35,7 +35,7 @@ public class Projectile extends GameObject implements Poolable {
     public Projectile(GameController gc) {
         super(gc);
         this.velocity = new Vector2();
-        this.speed = 480.0f;
+        this.speed = 640.0f;
     }
 
     public void setup(AbstractUnit owner, Vector2 startPosition, float angle, TextureRegion texture) {
@@ -54,8 +54,8 @@ public class Projectile extends GameObject implements Poolable {
     public void update(float dt) {
         position.mulAdd(velocity, dt);
         for (int i = 0; i < 4; i++) {
-            gc.getParticleController().setup(position.x, position.y, MathUtils.random(-30, 30), MathUtils.random(-30, 30), 0.2f, 0.9f, 0.4f,
-                    1, 0, 0, 1, 1f, 0.6f, 0, 0.8f);
+            gc.getParticleController().setup(position.x, position.y, MathUtils.random(-40, 40), MathUtils.random(-40, 40), 0.3f, 0.8f, 0.6f,
+                    1, 1, 0, 1, 1f, 0f, 0, 0.8f);
         }
 
         if (!gc.getMap().isCellPassable(getCellX(), getCellY(), true)) {
